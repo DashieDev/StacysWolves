@@ -1,0 +1,27 @@
+modLoader="javafml"
+loaderVersion="${fml_version_range}"
+license="All rights reserved"
+issueTrackerURL=""
+displayURL=""
+logoFile=""
+[[mods]] #mandatory
+    modId="stacywolves"
+    version="${file.jarVersion}"
+    updateJSONURL=""
+    displayName="Stacy Wolves"
+    credits=""
+    authors=""
+    description=""
+[[dependencies.stacywolves]] #optional
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}" #mandatory
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.stacywolves]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"

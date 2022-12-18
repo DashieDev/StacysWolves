@@ -1,0 +1,4 @@
+wolf :
+mxcnt = 4
+mncnt = 1
+w = 8
