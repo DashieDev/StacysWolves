@@ -141,6 +141,11 @@ public class FireWolf extends BaseWolf {
     }
 
     @Override
+    public boolean canWetLava() {
+        return true;
+    }
+
+    @Override
     public void furtherAffectTarget(Entity x) {
         x.setSecondsOnFire(3);
     }

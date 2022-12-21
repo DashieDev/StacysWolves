@@ -82,6 +82,7 @@ import stacywolves.common.entity.ai.base.DogLowHealthGoal;
 import stacywolves.common.entity.ai.base.DogMeleeAttackGoal;
 import stacywolves.common.entity.ai.base.DogRandomStrollGoal;
 import stacywolves.common.item.StacyBoneItem;
+import stacywolves.common.networking.packet.ParticlePackets;
 import stacywolves.common.entity.ai.base.*;
 
 
@@ -98,7 +99,9 @@ public abstract class BaseWolf extends TamableAnimal implements NeutralMob {
    private float interestedAngle;
    private float interestedAngleO;
    private boolean isWet;
+   private boolean isWetLava;
    private boolean isShaking;
+   private boolean shakeFire = false;
    private float shakeAnim;
    private float shakeAnimO;
    private static final UniformInt PERSISTENT_ANGER_TIME = TimeUtil.rangeOfSeconds(20, 39);
@@ -208,11 +211,12 @@ public abstract class BaseWolf extends TamableAnimal implements NeutralMob {
 
    public void aiStep() {
       super.aiStep();
-      if (!this.level.isClientSide && this.isWet && !this.isShaking && !this.isPathFinding() && this.onGround) {
-         this.isShaking = true;
-         this.shakeAnim = 0.0F;
-         this.shakeAnimO = 0.0F;
-         this.level.broadcastEntityEvent(this, (byte)8);
+      if (!this.level.isClientSide && this.canNaturallyShake(false)) {
+         this.startShakingAndBroadcast(false);
+      }
+
+      if (!this.level.isClientSide && this.canNaturallyShake(true)) {
+         this.startShakingAndBroadcast(true);
       }
 
       if (!this.level.isClientSide) {
@@ -231,53 +235,109 @@ public abstract class BaseWolf extends TamableAnimal implements NeutralMob {
             this.interestedAngle += (0.0F - this.interestedAngle) * 0.4F;
          }
 
-         if (this.canWet()) {
-            if (this.isInWaterRainOrBubble()) {
-               this.isWet = true;
-               if (this.isShaking && !this.level.isClientSide) {
-                  this.level.broadcastEntityEvent(this, (byte)56);
-                  this.cancelShake();
-               }
-            } else if ((this.isWet || this.isShaking) && this.isShaking) {
-               if (this.shakeAnim == 0.0F) {
-                  this.playSound(SoundEvents.WOLF_SHAKE, this.getSoundVolume(), (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
-                  this.gameEvent(GameEvent.ENTITY_SHAKE);
-               }
+         if (this.isInWaterRainOrBubble() && this.canWet()) {
+            this.isWet = true;
+            //When a wolf is shaking and got pushed into water, he will stop immediately.
+            if (this.isShaking && !this.level.isClientSide) {
+               this.level.broadcastEntityEvent(this, (byte)56);
+               this.finishShaking();
+            }
+         } else if (this.isInLava() && this.canWetLava()) {
+            this.isWetLava = true; 
+            //When a wolf is shaking and got pushed into lava, he will stop immediately.
+            if (this.isShaking && !this.level.isClientSide) {
+               this.level.broadcastEntityEvent(this, (byte)56);
+               this.finishShaking();
+            }
+         } else if (this.isShaking) {
+            if (this.shakeAnim == 0.0F) {
+               if (!shakeFire) this.playSound(SoundEvents.WOLF_SHAKE, this.getSoundVolume(), (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
+               this.gameEvent(GameEvent.ENTITY_SHAKE);
+            }
 
-               this.shakeAnimO = this.shakeAnim;
-               this.shakeAnim += 0.05F;
-               if (this.shakeAnimO >= 2.0F) {
-                  this.isWet = false;
-                  this.isShaking = false;
-                  this.shakeAnimO = 0.0F;
-                  this.shakeAnim = 0.0F;
-               }
+            this.shakeAnimO = this.shakeAnim;
+            this.shakeAnim += 0.05F;
+            if (this.shakeAnimO >= 2.0F) {
+               this.isWet = false;
+               this.isWetLava = false;
+               this.finishShaking();
+            }
 
-               if (this.shakeAnim > 0.4F) {
-                  float f = (float)this.getY();
-                  int i = (int)(Mth.sin((this.shakeAnim - 0.4F) * (float)Math.PI) * 7.0F);
-                  Vec3 vec3 = this.getDeltaMovement();
+            if (this.shakeAnim > 0.4F) {
+               float f = (float)this.getY();
+               int i = (int)(Mth.sin((this.shakeAnim - 0.4F) * (float)Math.PI) * 7.0F);
+               Vec3 vec3d = this.getDeltaMovement();
 
-                  for(int j = 0; j < i; ++j) {
-                     float f1 = (this.random.nextFloat() * 2.0F - 1.0F) * this.getBbWidth() * 0.5F;
-                     float f2 = (this.random.nextFloat() * 2.0F - 1.0F) * this.getBbWidth() * 0.5F;
-                     this.level.addParticle(ParticleTypes.SPLASH, this.getX() + (double)f1, (double)(f + 0.8F), this.getZ() + (double)f2, vec3.x, vec3.y, vec3.z);
-                  }
-               }
+               for (int j = 0; j < i; ++j) {
+                  float f1 = (this.random.nextFloat() * 2.0F - 1.0F) * this.getBbWidth() * 0.5F;
+                  float f2 = (this.random.nextFloat() * 2.0F - 1.0F) * this.getBbWidth() * 0.5F;
+                  if (this.shakeFire) {
+                      byte r = (byte) this.getRandom().nextInt(3);
+                      if (r==0)
+                          this.level.addParticle(ParticleTypes.LAVA, this.getX() + f1, f + 0.8F, this.getZ() + f2, vec3d.x, vec3d.y, vec3d.z);
+                      else if (r==1)
+                          this.level.addParticle(ParticleTypes.FLAME, this.getX() + f1, f + 0.8F, this.getZ() + f2, vec3d.x, vec3d.y, vec3d.z);
+                      else if (r==2)
+                          this.level.addParticle(ParticleTypes.SMOKE, this.getX() + f1, f + 0.8F, this.getZ() + f2, vec3d.x, vec3d.y, vec3d.z);
+                  } else
+                  this.level.addParticle(ParticleTypes.SPLASH, this.getX() + f1, f + 0.8F, this.getZ() + f2, vec3d.x, vec3d.y, vec3d.z);
+              }
+
+               if (this.shakeAnim > 0.8) {
+                     if (this.shakeFire) this.playSound(SoundEvents.FIRE_EXTINGUISH, this.getSoundVolume(), (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
+               }  
             }
          }
 
       }
    }
 
-   private void cancelShake() {
-      this.isShaking = false;
+   public void startShakingAndBroadcast(boolean shakeFire) {
+      if (this.isShaking) return; //Already shaking
+      if (this.level.isClientSide) return;
+      if (shakeFire && this.canWetLava()) {
+         this.startShakingLava();
+         ParticlePackets.DogStartShakingLavaPacket.sendDogStartShakingLavaPacketToNearByClients(this);
+         return;
+      }
+      if (!this.canWet()) return;
+      this.startShaking();
+      this.level.broadcastEntityEvent(this, (byte)8);
+   }
+
+   private void startShaking() {
+      if (this.isShaking) return; // don't shake if already shaking
+      this.isShaking = true;
+      this.shakeFire = false;
       this.shakeAnim = 0.0F;
       this.shakeAnimO = 0.0F;
    }
 
+   public void startShakingLava() {
+      if (this.isShaking) return; // don't shake if already shaking
+      this.isShaking = true;
+      this.shakeFire = true;
+      this.shakeAnim = 0.0F;
+      this.shakeAnimO = 0.0F;
+   }
+
+   private void finishShaking() {
+      this.isShaking = false;
+      this.shakeFire = false;
+      this.shakeAnim = 0.0F;
+      this.shakeAnimO = 0.0F;
+   }
+
+   public boolean canNaturallyShake(boolean shakeFire) {
+      boolean flag = shakeFire? 
+         this.isWetLava : this.isWet;
+
+      return flag && !this.isShaking && !this.isPathFinding() && this.onGround;
+   }
+
    public void die(DamageSource p_30384_) {
       this.isWet = false;
+      this.isWetLava = false;
       this.isShaking = false;
       this.shakeAnimO = 0.0F;
       this.shakeAnim = 0.0F;
@@ -419,7 +479,7 @@ public abstract class BaseWolf extends TamableAnimal implements NeutralMob {
          this.shakeAnim = 0.0F;
          this.shakeAnimO = 0.0F;
       } else if (p_30379_ == 56) {
-         this.cancelShake();
+         this.finishShaking();
       } else {
          super.handleEntityEvent(p_30379_);
       }
@@ -542,6 +602,10 @@ public abstract class BaseWolf extends TamableAnimal implements NeutralMob {
    
    public boolean canWet() {
       return true;
+   }
+
+   public boolean canWetLava() {
+      return false;
    }
 
    public Boolean isTameItem(Item x) {
