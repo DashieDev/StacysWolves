@@ -24,6 +24,7 @@ import stacywolves.common.StacyWolvesEntities;
 import stacywolves.common.StacyWolvesItemGroup;
 import stacywolves.common.StacyWolvesItems;
 import stacywolves.common.StacyWolvesLighting;
+import stacywolves.common.StacyWolvesMenuTypes;
 import stacywolves.common.lib.Constants;
 import stacywolves.common.spawn.WolfSpawnPlacement;
 
@@ -47,6 +48,7 @@ public class StacyWolves
         StacyWolvesEntities.ENTITIES.register(meb);
         StacyWolvesLighting.BLOCKS.register(meb);
         StacyWolvesItems.ITEMS.register(meb);
+        StacyWolvesMenuTypes.MENUS.register(meb);
 
         meb.addListener(StacyWolvesEntities::addEntityAttributes);
 
@@ -60,6 +62,7 @@ public class StacyWolves
         DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
             meb.addListener(ClientSetup::setupTileEntityRenderers);
             meb.addListener(ClientSetup::setupEntityRenderers);
+            meb.addListener(ClientSetup::setupScreenManagers);
         });
 
     }

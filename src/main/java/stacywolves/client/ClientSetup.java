@@ -1,12 +1,16 @@
 package stacywolves.client;
 
+import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import stacywolves.client.entity.model.BaseWolfModel;
 import stacywolves.client.entity.render.BaseWolfRenderer;
 import stacywolves.client.entity.render.FireWolfRenderer;
+import stacywolves.client.screen.CraftingWolfScreen;
 import stacywolves.common.StacyWolvesEntities;
+import stacywolves.common.StacyWolvesMenuTypes;
 import stacywolves.common.lib.Constants;
 
 public class ClientSetup {
@@ -52,6 +56,10 @@ public class ClientSetup {
     // public static final ModelLayerLocation ZOMBIE_WOLF = new ModelLayerLocation(new ResourceLocation(Constants.MODID, "zombie_wolf"), "main");
     // public static final ModelLayerLocation CHOPIN_WOLF = new ModelLayerLocation(new ResourceLocation(Constants.MODID, "chopin_wolf"), "main");
        
+    public static void setupScreenManagers(final FMLClientSetupEvent event) {
+        MenuScreens.register(StacyWolvesMenuTypes.CRAFTING_WOLF_MENU.get(), CraftingWolfScreen::new);
+    }
+
     public static void setupEntityRenderers(final EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(BASE_WOLF, BaseWolfModel::createBodyLayer);
         // event.registerLayerDefinition(AIR_WOLF, BaseWolfModel::createBodyLayer);
