@@ -16,7 +16,7 @@ import stacywolves.common.entity.wolf.FireWolf;
 import stacywolves.common.utils.DogUtil;
 
 public class FireWolfGoAwayFromWaterGoal extends Goal {
-    private final int SEARCH_RANGE = 4;
+    private final int SEARCH_RANGE = 12; // Thicc range for the dog to find cover under the rain
 
     private FireWolf dog;
 
