@@ -26,6 +26,7 @@ import stacywolves.common.StacyWolvesItems;
 import stacywolves.common.StacyWolvesLighting;
 import stacywolves.common.StacyWolvesMenuTypes;
 import stacywolves.common.lib.Constants;
+import stacywolves.common.networking.PacketHandler;
 import stacywolves.common.spawn.WolfSpawnPlacement;
 
 import org.apache.logging.log4j.LogManager;
@@ -70,6 +71,8 @@ public class StacyWolves
     private void setup(final FMLCommonSetupEvent event)
     {
         StacyWolvesLighting.init();
+
+        PacketHandler.init();
 
         WolfSpawnPlacement.setupSpawnPlacements();
         var eventbus = MinecraftForge.EVENT_BUS;
