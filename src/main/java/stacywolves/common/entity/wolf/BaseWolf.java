@@ -148,7 +148,7 @@ public abstract class BaseWolf extends TamableAnimal implements NeutralMob {
       this.targetSelector.addGoal(4, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, this::isAngryAt));
       //this.targetSelector.addGoal(5, new NonTameRandomTargetGoal<>(this, Animal.class, false, PREY_SELECTOR));
       //this.targetSelector.addGoal(6, new NonTameRandomTargetGoal<>(this, Turtle.class, false, Turtle.BABY_ON_LAND_SELECTOR));
-      this.targetSelector.addGoal(7, new NearestAttackableTargetGoal<>(this, AbstractSkeleton.class, false));
+      this.targetSelector.addGoal(5, new DogNearestToOwnerAttackableTargetGoal<>(this, AbstractSkeleton.class, false));
       this.targetSelector.addGoal(8, new ResetUniversalAngerTargetGoal<>(this, true));
    }
 
