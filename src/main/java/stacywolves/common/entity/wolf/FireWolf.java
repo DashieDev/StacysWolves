@@ -39,9 +39,11 @@ import net.minecraft.world.level.NaturalSpawner;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.TorchBlock;
+import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraftforge.eventbus.api.Event;
 import stacywolves.common.entity.ai.base.*;
 import stacywolves.common.entity.ai.fire_wolf.FireWolfFollowOwnerGoal;
+import stacywolves.common.entity.ai.fire_wolf.FireWolfGoAwayFromWaterGoal;
 import stacywolves.ChopinLogger;
 
 public class FireWolf extends BaseWolf {
@@ -49,17 +51,20 @@ public class FireWolf extends BaseWolf {
 
     public FireWolf(EntityType<FireWolf> p_30369_, Level p_30370_) {
         super(p_30369_, p_30370_);
+        this.setPathfindingMalus(BlockPathTypes.WATER, -1);
+        this.setPathfindingMalus(BlockPathTypes.WATER_BORDER, 8);
+        this.setPathfindingMalus(BlockPathTypes.DAMAGE_FIRE, 0);
+        this.setPathfindingMalus(BlockPathTypes.DANGER_FIRE, 0);
+        this.setPathfindingMalus(BlockPathTypes.LAVA, 8);
     }
 
     @Override
     protected void registerGoals() {
         int p = 1;
           this.goalSelector.addGoal(p, new DogFloatGoal(this));
-          this.goalSelector.addGoal(p, new DogFindWaterGoal(this));
-          this.goalSelector.addGoal(p, new DogAvoidPushWhenIdleGoal(this));
           //this.goalSelector.addGoal(1, new PatrolAreaGoal(this));
           ++p;
-          this.goalSelector.addGoal(p, new DogGoAwayFromFireGoal(this));
+          this.goalSelector.addGoal(p, new FireWolfGoAwayFromWaterGoal(this));
           ++p;
           this.goalSelector.addGoal(p, new SitWhenOrderedToGoal(this));
         //   ++p;
@@ -108,6 +113,8 @@ public class FireWolf extends BaseWolf {
     public void tick() {
         if (!this.level.isClientSide) {
             this.hurtIfWet();
+            this.healIfInFire();
+            
         } else { 
             for (int count = 0; count < 2; ++count) {
                 this.level.addParticle(ParticleTypes.SMOKE,
@@ -153,11 +160,13 @@ public class FireWolf extends BaseWolf {
     @Override
     public float getWalkTargetValue(BlockPos p_27573_, LevelReader p_27574_) {
         return 10F;
-    }
+    } 
 
+    int tickTillHurt = 0;
     protected void hurtIfWet() {
-		if (/*!this.isTame() &&*/ this.isInWaterRainOrBubble())
+		if (/*!this.isTame() &&*/ this.isInWaterRainOrBubble() && --this.tickTillHurt <= 0)
 		{
+            this.tickTillHurt = 5;
 			if (this.level instanceof ServerLevel) {
                 ((ServerLevel) this.level).sendParticles(ParticleTypes.LARGE_SMOKE, this.getX(), this.getY(), this.getZ(), 15, this.getBbWidth(), 0.8f, this.getBbWidth(), 0.3);
                 this.playSound(SoundEvents.FIRE_EXTINGUISH,0.5F, 2.6F + (random.nextFloat() - random.nextFloat()) * 0.8F);
@@ -169,5 +178,13 @@ public class FireWolf extends BaseWolf {
             
 		}
 	}     
+
+    int tickTillHeal = 0;
+    protected void healIfInFire() {
+        if (this.isInLava() && --this.tickTillHeal <= 0) {
+            this.tickTillHeal = 5;
+            this.heal(1);
+        }
+    }
 
 }
