@@ -166,7 +166,7 @@ public class FireWolf extends BaseWolf {
     protected void hurtIfWet() {
 		if (/*!this.isTame() &&*/ this.isInWaterRainOrBubble() && --this.tickTillHurt <= 0)
 		{
-            this.tickTillHurt = 5;
+            this.tickTillHurt = 10;
 			if (this.level instanceof ServerLevel) {
                 ((ServerLevel) this.level).sendParticles(ParticleTypes.LARGE_SMOKE, this.getX(), this.getY(), this.getZ(), 15, this.getBbWidth(), 0.8f, this.getBbWidth(), 0.3);
                 this.playSound(SoundEvents.FIRE_EXTINGUISH,0.5F, 2.6F + (random.nextFloat() - random.nextFloat()) * 0.8F);
