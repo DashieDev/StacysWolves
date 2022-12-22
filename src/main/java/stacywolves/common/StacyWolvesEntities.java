@@ -10,50 +10,13 @@ import net.minecraft.world.entity.EntityType.EntityFactory;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.registries.RegistryObject;
-import stacywolves.common.entity.wolf.AirWolf;
-import stacywolves.common.entity.wolf.BirchWolf;
-import stacywolves.common.entity.wolf.BookshelfWolf;
-import stacywolves.common.entity.wolf.CakeWolf;
-import stacywolves.common.entity.wolf.ChopinWolf;
-import stacywolves.common.entity.wolf.CoalWolf;
-import stacywolves.common.entity.wolf.CookieWolf;
-import stacywolves.common.entity.wolf.CowWolf;
-import stacywolves.common.entity.wolf.CraftingTableWolf;
-import stacywolves.common.entity.wolf.DesertWolf;
-import stacywolves.common.entity.wolf.DiamondWolf;
-import stacywolves.common.entity.wolf.DonkeyWolf;
-import stacywolves.common.entity.wolf.EarthWolf;
-import stacywolves.common.entity.wolf.EmeraldWolf;
-import stacywolves.common.entity.wolf.EndWolf;
-import stacywolves.common.entity.wolf.EnderWolf;
-import stacywolves.common.entity.wolf.FireWolf;
-import stacywolves.common.entity.wolf.FlowerWolf;
-import stacywolves.common.entity.wolf.GoldWolf;
-import stacywolves.common.entity.wolf.GuardianWolf;
-import stacywolves.common.entity.wolf.IceWolf;
-import stacywolves.common.entity.wolf.IronWolf;
-import stacywolves.common.entity.wolf.LapisWolf;
-import stacywolves.common.entity.wolf.MelonWolf;
-import stacywolves.common.entity.wolf.MesaWolf;
-import stacywolves.common.entity.wolf.MushroomWolf;
-import stacywolves.common.entity.wolf.NetherWolf;
-import stacywolves.common.entity.wolf.OcelotWolf;
-import stacywolves.common.entity.wolf.PrismarineWolf;
-import stacywolves.common.entity.wolf.RedSandWolf;
-import stacywolves.common.entity.wolf.RedstoneWolf;
-import stacywolves.common.entity.wolf.SavannahWolf;
-import stacywolves.common.entity.wolf.SkeletonWolf;
-import stacywolves.common.entity.wolf.SlimeWolf;
-import stacywolves.common.entity.wolf.SquidWolf;
-import stacywolves.common.entity.wolf.SunflowerWolf;
-import stacywolves.common.entity.wolf.TorchWolf;
-import stacywolves.common.entity.wolf.WaterWolf;
-import stacywolves.common.entity.wolf.WitchWolf;
-import stacywolves.common.entity.wolf.ZombieWolf;
+import stacywolves.common.entity.wolf.*;
 import stacywolves.common.lib.Constants;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier.Builder;
 
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -102,9 +65,6 @@ public class StacyWolvesEntities {
     public static final RegistryObject<EntityType<WitchWolf>> WITCH_WOLF = registerWolf("witch_wolf", WitchWolf::new);
     public static final RegistryObject<EntityType<ZombieWolf>> ZOMBIE_WOLF = registerWolf("zombie_wolf", ZombieWolf::new);
 
-    public static final RegistryObject<EntityType<ChopinWolf>> CHOPIN_WOLF = registerWolf("chopin_wolf", ChopinWolf::new);
-
-
 
     private static <T extends Entity> RegistryObject<EntityType<T>> registerWolf(String name, EntityFactory<T> sup ) {
         return register(name, sup, MobCategory.CREATURE, (b) -> b
@@ -136,7 +96,7 @@ public class StacyWolvesEntities {
 
     public static void addEntityAttributes(EntityAttributeCreationEvent e) {
                 
-        addDefaultAttributes(e, AIR_WOLF);
+        addDefaultAttributesWithAdditional(e, AIR_WOLF, AirWolf.getAddtionalAttributes());
         addDefaultAttributes(e, BIRCH_WOLF);
         addDefaultAttributes(e, BOOKSHELF_WOLF);
         addDefaultAttributes(e, CAKE_WOLF);
@@ -172,11 +132,10 @@ public class StacyWolvesEntities {
         addDefaultAttributes(e, SQUID_WOLF);
         addDefaultAttributes(e, SUNFLOWER_WOLF);
         addDefaultAttributes(e, TORCH_WOLF);
-        addDefaultAttributes(e, WATER_WOLF);
+        addDefaultAttributesWithAdditional(e, WATER_WOLF, WaterWolf.getAddtionalAttributes());
         addDefaultAttributes(e, WITCH_WOLF);
         addDefaultAttributes(e, ZOMBIE_WOLF);
 
-        addDefaultAttributes(e, CHOPIN_WOLF);
      }
 
      private static <T extends LivingEntity> void addDefaultAttributes(EntityAttributeCreationEvent e, RegistryObject<EntityType<T>> x) {
@@ -191,6 +150,17 @@ public class StacyWolvesEntities {
                 //.add(DoggyAttributes.CRIT_BONUS.get(), 1D)
                  .build()
          );
+     }
+
+     private static <T extends LivingEntity> void addDefaultAttributesWithAdditional(
+        EntityAttributeCreationEvent e, RegistryObject<EntityType<T>> x, Consumer<Builder> apply) {
+        var builder = Mob.createMobAttributes()
+            .add(Attributes.MAX_HEALTH, 8.0D)
+            .add(Attributes.MOVEMENT_SPEED, 0.3D)
+            .add(Attributes.KNOCKBACK_RESISTANCE, 1.0D)
+            .add(Attributes.ATTACK_DAMAGE, 2.0D);
+        apply.accept(builder);
+        e.put(x.get(), builder.build());
      }
 }
 

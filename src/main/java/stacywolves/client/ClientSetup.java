@@ -144,7 +144,6 @@ public class ClientSetup {
         event.registerEntityRenderer(StacyWolvesEntities.WATER_WOLF.get(), BaseWolfRenderer::new);
         event.registerEntityRenderer(StacyWolvesEntities.WITCH_WOLF.get(), BaseWolfRenderer::new);
         event.registerEntityRenderer(StacyWolvesEntities.ZOMBIE_WOLF.get(), BaseWolfRenderer::new);
-        event.registerEntityRenderer(StacyWolvesEntities.CHOPIN_WOLF.get(), BaseWolfRenderer::new);
     }
 
 }
