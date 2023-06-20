@@ -11,12 +11,18 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.AirBlock;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import stacywolves.common.StacyWolvesLighting;
 import stacywolves.common.utils.Maths;
 
 public class TorchWolf extends BaseWolf {
     
     BlockPos lightingPos;
+
+    BlockState oldBlockState;
 
     public TorchWolf(EntityType<TorchWolf> p_30369_, Level p_30370_) {
         super(p_30369_, p_30370_);
@@ -31,10 +37,14 @@ public class TorchWolf extends BaseWolf {
         BlockPos p = this.blockPosition();
 
         // Add light where the dog goes to
-        if (!p.equals(this.lightingPos)) { 
+        if (!p.equals(this.lightingPos) && this.level.getBlockState(p).getBlock() instanceof AirBlock) { 
             this.addLight(p); //add light into new block
             if (this.lightingPos != null) this.removeLight(this.lightingPos); //remove old block
             this.lightingPos = new BlockPos(p.getX(), p.getY(), p.getZ());//update coord
+        }
+
+        if (this.lightingPos != null && this.distanceToSqr(Vec3.atBottomCenterOf(this.lightingPos)) > 9) {
+            this.removeLight(this.lightingPos); 
         }
 
 
@@ -51,18 +61,15 @@ public class TorchWolf extends BaseWolf {
     }
 
     public void addLight(BlockPos b) {
-        for (var i : StacyWolvesLighting.lightSubstitudeMap.entrySet()) {
-            if (this.level.getBlockState(b).getBlock() == i.getKey()) {
-                this.level.setBlock(b, i.getValue().defaultBlockState(), 3);
-            }
-        }
+        this.oldBlockState = this.level.getBlockState(b);
+        this.level.setBlock(b, Blocks.LIGHT.defaultBlockState(), 3);
     }
 
     public void removeLight(BlockPos b) {
-        for (var i : StacyWolvesLighting.lightSubstitudeMap.entrySet()) {
-            if (this.level.getBlockState(b).getBlock() == i.getValue()) {
-                this.level.setBlock(b, i.getKey().defaultBlockState(), 3);
-            }
+        if (this.oldBlockState != null) {
+            this.level.setBlock(b, this.oldBlockState, 3);
+        } else {
+            this.level.setBlock(b, Blocks.AIR.defaultBlockState(), 3);
         }
     }
 

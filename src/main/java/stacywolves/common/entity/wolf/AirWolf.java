@@ -11,9 +11,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier.Builder;
 public class AirWolf extends BaseWolf {
    public AirWolf(EntityType<AirWolf> p_30369_, Level p_30370_) {
       super(p_30369_, p_30370_);
-      var attribute = this.getAttribute(ForgeMod.ENTITY_GRAVITY.get());
-      if (attribute != null)
-         attribute.setBaseValue(0.005);
    }
 
    @Override

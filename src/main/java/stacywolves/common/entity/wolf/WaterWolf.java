@@ -15,7 +15,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier.Builder;
 import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.fluids.FluidType;
-import stacywolves.common.entity.ai.base.DogFloatGoal;
 import stacywolves.common.entity.ai.water_wolf.SwimmerDogGoal;
 
 public class WaterWolf extends BaseWolf {
@@ -36,22 +35,6 @@ public class WaterWolf extends BaseWolf {
    @Override
    protected void registerGoals() {
       super.registerGoals();
-
-      // Replace DogFloatGoal with WaterWolfFloatGoal.
-      var dogGoals = this.goalSelector.getAvailableGoals();
-      Goal goalToRemove = null;
-      for (var x : dogGoals) {
-         if (x.getGoal() instanceof DogFloatGoal x1) {
-            goalToRemove = x1;
-         }
-      }
-
-      if (goalToRemove != null)
-         this.goalSelector.removeGoal(goalToRemove);
-
-      this.goalSelector.addGoal(1, new WaterWolfFloatGoal(this));
-
-      this.goalSelector.addGoal(5, new SwimmerDogGoal(this));
    }
 
    @Override
@@ -131,22 +114,6 @@ public class WaterWolf extends BaseWolf {
       @Override
       protected boolean canUpdatePath() {
          return this.isInLiquid();
-      }
-
-   }
-
-   public class WaterWolfFloatGoal extends DogFloatGoal {
-
-      private WaterWolf dog;
-
-      public WaterWolfFloatGoal(WaterWolf dog) {
-         super(dog);
-         this.dog = dog;
-      }
-
-      @Override
-      public boolean canUse() {
-         return super.canUse() && !this.dog.getWolfSwimming();
       }
 
    }

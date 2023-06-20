@@ -52,6 +52,7 @@ import net.minecraft.world.entity.ai.goal.target.OwnerHurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.OwnerHurtTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.ResetUniversalAngerTargetGoal;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.animal.Turtle;
 import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.animal.horse.Llama;
@@ -72,18 +73,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
 import stacywolves.ChopinLogger;
-import stacywolves.common.entity.ai.base.DogAvoidPushWhenIdleGoal;
-import stacywolves.common.entity.ai.base.DogBegGoal;
-import stacywolves.common.entity.ai.base.DogFindWaterGoal;
-import stacywolves.common.entity.ai.base.DogFloatGoal;
-import stacywolves.common.entity.ai.base.DogFollowOwnerGoal;
-import stacywolves.common.entity.ai.base.DogGoAwayFromFireGoal;
-import stacywolves.common.entity.ai.base.DogLowHealthGoal;
-import stacywolves.common.entity.ai.base.DogMeleeAttackGoal;
-import stacywolves.common.entity.ai.base.DogRandomStrollGoal;
+import stacywolves.common.entity.ai.base.WolfBegGoal;
 import stacywolves.common.item.StacyBoneItem;
-import stacywolves.common.networking.packet.ParticlePackets;
-import stacywolves.common.entity.ai.base.*;
 
 
 public abstract class BaseWolf extends TamableAnimal implements NeutralMob {
@@ -114,44 +105,23 @@ public abstract class BaseWolf extends TamableAnimal implements NeutralMob {
    }
 
    protected void registerGoals() {
-      int p = 1;
-        this.goalSelector.addGoal(p, new DogFloatGoal(this));
-        this.goalSelector.addGoal(p, new DogFindWaterGoal(this));
-        this.goalSelector.addGoal(p, new DogAvoidPushWhenIdleGoal(this));
-        //this.goalSelector.addGoal(1, new PatrolAreaGoal(this));
-        ++p;
-        this.goalSelector.addGoal(p, new DogGoAwayFromFireGoal(this));
-        ++p;
-        this.goalSelector.addGoal(p, new SitWhenOrderedToGoal(this));
-      //   ++p;
-      //   this.goalSelector.addGoal(p, new DogHungryGoal(this, 1.0f, 2.0f));
-        ++p;
-        this.goalSelector.addGoal(p, new DogLowHealthGoal(this, 1.0f, 2.0f));
-        //this.goalSelector.addGoal(4, new DogLeapAtTargetGoal(this, 0.4F));
-        ++p;
-        // TODO this.goalSelector.addGoal(p, new DogEatFromChestDogGoal(this, 1.0));
-        this.goalSelector.addGoal(p, new DogMeleeAttackGoal(this, 1.0D, true, 20, 40));
-        ++p;
-        this.goalSelector.addGoal(p, new DogFollowOwnerGoal(this, 1.0D, 10.0F, 2.0F));
-        ++p;
-        this.goalSelector.addGoal(p, new BreedGoal(this, 1.0D));
-        ++p;
-        this.goalSelector.addGoal(p, new DogRandomStrollGoal(this, 1.0D));
-        ++p;
-        this.goalSelector.addGoal(p, new DogBegGoal(this, 8.0F));
-        ++p;
-        this.goalSelector.addGoal(p, new LookAtPlayerGoal(this, Player.class, 8.0F));
-        this.goalSelector.addGoal(p, new RandomLookAroundGoal(this));
-
-
-
+      this.goalSelector.addGoal(1, new FloatGoal(this));
+      this.goalSelector.addGoal(2, new SitWhenOrderedToGoal(this));
+      this.goalSelector.addGoal(4, new LeapAtTargetGoal(this, 0.4F));
+      this.goalSelector.addGoal(5, new MeleeAttackGoal(this, 1.0D, true));
+      this.goalSelector.addGoal(6, new FollowOwnerGoal(this, 1.0D, 10.0F, 2.0F, false));
+      this.goalSelector.addGoal(7, new BreedGoal(this, 1.0D));
+      this.goalSelector.addGoal(8, new WaterAvoidingRandomStrollGoal(this, 1.0D));
+      this.goalSelector.addGoal(9, new WolfBegGoal(this, 8.0F));
+      this.goalSelector.addGoal(10, new LookAtPlayerGoal(this, Player.class, 8.0F));
+      this.goalSelector.addGoal(10, new RandomLookAroundGoal(this));
       this.targetSelector.addGoal(1, new OwnerHurtByTargetGoal(this));
       this.targetSelector.addGoal(2, new OwnerHurtTargetGoal(this));
       this.targetSelector.addGoal(3, (new HurtByTargetGoal(this)).setAlertOthers());
       this.targetSelector.addGoal(4, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, this::isAngryAt));
-      //this.targetSelector.addGoal(5, new NonTameRandomTargetGoal<>(this, Animal.class, false, PREY_SELECTOR));
-      //this.targetSelector.addGoal(6, new NonTameRandomTargetGoal<>(this, Turtle.class, false, Turtle.BABY_ON_LAND_SELECTOR));
-      this.targetSelector.addGoal(5, new DogNearestToOwnerAttackableTargetGoal<>(this, AbstractSkeleton.class, false));
+      this.targetSelector.addGoal(5, new NonTameRandomTargetGoal<>(this, Animal.class, false, PREY_SELECTOR));
+      this.targetSelector.addGoal(6, new NonTameRandomTargetGoal<>(this, Turtle.class, false, Turtle.BABY_ON_LAND_SELECTOR));
+      this.targetSelector.addGoal(7, new NearestAttackableTargetGoal<>(this, AbstractSkeleton.class, false));
       this.targetSelector.addGoal(8, new ResetUniversalAngerTargetGoal<>(this, true));
    }
 
@@ -297,7 +267,6 @@ public abstract class BaseWolf extends TamableAnimal implements NeutralMob {
       if (this.level.isClientSide) return;
       if (shakeFire && this.canWetLava()) {
          this.startShakingLava();
-         ParticlePackets.DogStartShakingLavaPacket.sendDogStartShakingLavaPacketToNearByClients(this);
          return;
       }
       if (!this.canWet()) return;
@@ -425,7 +394,7 @@ public abstract class BaseWolf extends TamableAnimal implements NeutralMob {
                   itemstack.shrink(1);
                }
 
-               this.heal((float)item.getFoodProperties().getNutrition());
+               this.heal(this.getHealValue(itemstack));
                return InteractionResult.SUCCESS;
             }
 
@@ -469,10 +438,10 @@ public abstract class BaseWolf extends TamableAnimal implements NeutralMob {
             return InteractionResult.SUCCESS;
          }
 
-         return super.mobInteract(p_30412_, p_30413_);
+         //No breed using food 
+         return InteractionResult.PASS;
       }
    }
-
    public void handleEntityEvent(byte p_30379_) {
       if (p_30379_ == 8) {
          this.isShaking = true;
@@ -497,6 +466,16 @@ public abstract class BaseWolf extends TamableAnimal implements NeutralMob {
    public boolean isFood(ItemStack p_30440_) {
       Item item = p_30440_.getItem();
       return item.isEdible() && item.getFoodProperties().isMeat();
+   }
+
+   public float getHealValue(ItemStack stack) {
+      return (float)stack.getItem().getFoodProperties().getNutrition();
+   }
+
+   @Override
+   public int getMaxFallDistance() {
+      //There is no reason for wolves to hurt themselves.
+      return 3;
    }
 
    public int getMaxSpawnClusterSize() {
@@ -548,15 +527,15 @@ public abstract class BaseWolf extends TamableAnimal implements NeutralMob {
       this.entityData.set(DATA_INTERESTED_ID, p_30445_);
    }
 
-   public boolean canMate(Animal p_30392_) {
-      if (p_30392_ == this) {
+   public boolean canMate(Animal animal) {
+      if (animal == this) {
          return false;
       } else if (!this.isTame()) {
          return false;
-      } else if (!(p_30392_ instanceof Wolf)) {
+      } else if ((animal.getClass() != this.getClass())) {
          return false;
       } else {
-         Wolf wolf = (Wolf)p_30392_;
+         BaseWolf wolf = (BaseWolf)animal;
          if (!wolf.isTame()) {
             return false;
          } else if (wolf.isInSittingPose()) {

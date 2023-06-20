@@ -4,9 +4,7 @@ import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 import stacywolves.common.lib.Constants;
-import stacywolves.common.networking.data.DogStartShakingLavaData;
 
-import stacywolves.common.networking.packet.ParticlePackets.*;
 
 public final class PacketHandler {
 
@@ -19,7 +17,6 @@ public final class PacketHandler {
     private static int disc = 0;
 
     public static void init() {
-        registerPacket(new DogStartShakingLavaPacket(), DogStartShakingLavaData.class);
     }
 
     public static <MSG> void send(PacketDistributor.PacketTarget target, MSG message) {
